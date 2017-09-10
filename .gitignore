@@ -1,4 +1,6 @@
 *.iml
+.idea/*
+openCVLibrary320/*
 .gradle
 /local.properties
 /.idea/workspace.xml

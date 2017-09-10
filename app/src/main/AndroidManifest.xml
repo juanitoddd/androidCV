@@ -12,13 +12,40 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:screenOrientation="landscape">
+        </activity>
+        <activity
+            android:name=".DetectActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_detect"
+            android:theme="@style/FullscreenTheme">
+        </activity>
+        <activity
+            android:name=".animActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_proc"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".procActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_proc"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme">
+        </activity>
+        <activity
+            android:name=".imgActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_proc"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme">
         </activity>
     </application>
 
