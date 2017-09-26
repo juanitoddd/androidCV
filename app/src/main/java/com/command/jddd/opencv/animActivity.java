@@ -3,11 +3,13 @@ package com.command.jddd.opencv;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.ImageView;
+import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -43,12 +45,18 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final String TAG = "OCVSample";
 
+    int screenWidth;
+    int screenHeight;
+
+    double loader = 0; // Double for the moment instead of bool
+
     JavaCameraView javaCameraView;
     ImageView iv;
 
     // Holds the best Mat to make comparisons
     Mat camLayer;
     Mat animLayer;
+    Mat maskLayer;
 
     Scalar COLOR_RED = new Scalar(255,0,0,255);
     Scalar COLOR_GREEN = new Scalar(81, 190, 0);
@@ -58,12 +66,12 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
 
     List<MatOfPoint> contours;
     List<MatOfPoint> mContours;
+    List<MatOfPoint> maskContours;
 
     Point[] imgPtsArray;
     List<Point> imgPtsList;
 
     AssetManager assetManager;
-    Bitmap bmp = null;
 
     int count = 0;
     ArrayList<Mat> animation;
@@ -72,13 +80,15 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "called onCreate");
+        // Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_anim);
         javaCameraView = (JavaCameraView)findViewById(R.id.camera_view);
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
         // iv = (ImageView) findViewById(R.id.overlayView);
+        // iv.setVisibility(SurfaceView.VISIBLE);
         if (!OpenCVLoader.initDebug()) {
             Log.e(TAG, "  OpenCVLoader.initDebug(), not working.");
         } else {
@@ -165,34 +175,24 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
 
 
     public void initialize(int width, int height) throws IOException {
-        Log.i(TAG, "Initializing ...");
-        // animLayer = img2Mat("square.png");
-        Mat tmpLayer = img2Mat("square.png");
-        animLayer = new Mat(new Size(240, 180), 24);
-        Imgproc.resize( tmpLayer, animLayer, new Size(240, 180) );
+
+        screenWidth = width;
+        screenHeight = height;
+
         imgPtsList = new ArrayList<>();
-        // Log.i(TAG, "inMat checkVector: " + animLayer.checkVector(animLayer.channels(), animLayer.depth()));
 
-        Point p1 = new Point(0,0);
-        Point p2 = new Point(width,0);
-        Point p3 = new Point(width, height);
-        Point p4 = new Point(0,height);
-        imgPtsList.add(p1);
-        imgPtsList.add(p2);
-        imgPtsList.add(p3);
-        imgPtsList.add(p4);
-
-        Imgproc.resize(tmpLayer, animLayer, new Size(240, 180));
-        // Mat proyection = transformation(tr);
-
-        String[] names = new String[]{"square.png", "arrow.png", "circle.png", "star.png", "triangle.png", "hand.png", "circle.png", "arrow.png"};
+        String formattedName;
         animation = new ArrayList<>();
-        for(int j = 0; j < names.length; j++) {
+
+        for(int j = 1; j < 51; j++) {
+
+            formattedName = "anim" + String.format("%04d", j) + ".png";
+
             Mat tmp = new Mat();
-            Imgproc.resize(img2Mat(names[j]), tmp, new Size(240, 180));
+            Imgproc.resize(img2Mat(formattedName), tmp, new Size(width, height));
             animation.add(tmp);
         }
-
+        loader = 100;
         animItr = animation.iterator();
         t = animation.get(0);
     }
@@ -222,7 +222,11 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
             Log.i(TAG, "Not found ...");
             e.printStackTrace();
         }
-        Bitmap bitmap = BitmapFactory.decodeStream(istr);
+        // Bitmap bitmap = BitmapFactory.decodeStream(istr);
+        Options opt = new Options();
+        opt.inDither = false;   //important
+        opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeStream(istr, null, opt);
         Utils.bitmapToMat(bitmap, mPt);
         return mPt;
     }
@@ -241,17 +245,18 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     public Mat processInputFrame(Mat inputFrame) {
-        // Log.i(TAG, "Input Fame " + inputFrame.empty());
 
         Mat hierarchy = new Mat();
 
         camLayer = new Mat();
-        // animLayer = new Mat();
+        maskLayer = new Mat();
+        animLayer = inputFrame.clone();
 
         contours = new ArrayList<>();
         mContours = new ArrayList<>();
+        maskContours = new ArrayList<>();
 
-        Imgproc.cvtColor(inputFrame, camLayer, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(animLayer, camLayer, Imgproc.COLOR_RGB2GRAY);
         Imgproc.blur(camLayer, camLayer, new Size(13, 13));
         Imgproc.threshold(camLayer, camLayer, 100, 255, Imgproc.THRESH_BINARY);
         // Imgproc.Canny(findLayer, findLayer, 10.0, 30.0);
@@ -280,11 +285,11 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
             MatOfPoint points = new MatOfPoint( approxCurve.toArray() );
 
             if (points.total() == 4) {
+                // Log.i(TAG, "Inside 4 Contours");
+                Rect rect = Imgproc.boundingRect(points);
+                // Imgproc.rectangle(animLayer, rect.tl(), rect.br(), COLOR_GREEN,1, 8,0);
 
-                // Rect rect = Imgproc.boundingRect(points);
                 // Imgproc.drawContours(inputFrame, mContours, -1, COLOR_RED, 3);
-                // Imgproc.rectangle(inputFrame, rect.tl(), rect.br(), COLOR_GREEN,1, 8,0);
-                // Point[] pArray = points.toArray();
                 ArrayList<Point> pList = new ArrayList<>(points.toList());
 
                 Point topLeft = pList.get(0);
@@ -318,55 +323,73 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
                     }
                 }
 
-                Imgproc.line(inputFrame, topLeft, topRight, COLOR_YELLOW);
-                Imgproc.line(inputFrame, topRight, bottomRight, COLOR_YELLOW);
-                Imgproc.line(inputFrame, bottomRight, bottomLeft, COLOR_YELLOW);
-                Imgproc.line(inputFrame, bottomLeft, topLeft, COLOR_YELLOW);
+                /*
+                Imgproc.line(animLayer, topLeft, topRight, COLOR_YELLOW);
+                Imgproc.line(animLayer, topRight, bottomRight, COLOR_YELLOW);
+                Imgproc.line(animLayer, bottomRight, bottomLeft, COLOR_YELLOW);
+                Imgproc.line(animLayer, bottomLeft, topLeft, COLOR_YELLOW);
 
-                Imgproc.circle(inputFrame, topLeft, 15, COLOR_GREEN, 2);
-                Imgproc.circle(inputFrame, topRight, 15, COLOR_YELLOW, 2);
-                Imgproc.circle(inputFrame, bottomLeft, 15, COLOR_BLUE, 2);
-                Imgproc.circle(inputFrame, bottomRight, 15, COLOR_ORANGE, 2);
+                Imgproc.circle(animLayer, topLeft, 15, COLOR_GREEN, 2);
+                Imgproc.circle(animLayer, topRight, 15, COLOR_YELLOW, 2);
+                Imgproc.circle(animLayer, bottomLeft, 15, COLOR_BLUE, 2);
+                Imgproc.circle(animLayer, bottomRight, 15, COLOR_ORANGE, 2);
+                */
+                // Taking reference the Rectangle around the Contours
+                // Contour points
+                ArrayList<Point> cPoints = new ArrayList<>();
+                cPoints.add(new Point(topLeft.x - rect.x, topLeft.y - rect.y));
+                cPoints.add(new Point(topRight.x - rect.x, topRight.y - rect.y));
+                cPoints.add(new Point(bottomRight.x - rect.x, bottomRight.y - rect.y));
+                cPoints.add(new Point(bottomLeft.x - rect.x, bottomLeft.y - rect.y));
 
-                ArrayList<Point> tr = new ArrayList<>();
-                tr.add(topLeft);
-                tr.add(topRight);
-                tr.add(bottomRight);
-                tr.add(bottomLeft);
-
-                // inMat2.copyTo(outMat());
-                // FIXME: Check why the animation effect is not taking place
+                // Rectangle points
+                ArrayList<Point> rPoints = new ArrayList<>();
+                rPoints.add(new Point(0, 0));
+                rPoints.add(new Point(rect.width, 0));
+                rPoints.add(new Point(rect.width, rect.height));
+                rPoints.add(new Point(0, rect.height));
 
                 if(animItr.hasNext()) {
-                    if(++count % 2 == 0) { //Slowdown frame rate
-                        t = animItr.next();
-                        Log.i(TAG, "count ... " + count);
-                    }
-                    t.copyTo(inputFrame.submat(new Rect(0, 0, 240, 180)));
+
+                    t = animItr.next();
+                    // Copy to surrounding rectangle
+                    Mat small = new Mat();
+                    Imgproc.resize(t,small,new Size(rect.width, rect.height));//resize image
+
+                    // Transformation Process
+                    Mat warped = new Mat(rect.width, rect.height, CvType.CV_8UC4);
+                    Mat startM = Converters.vector_Point2f_to_Mat(rPoints);
+                    Mat endM = Converters.vector_Point2f_to_Mat(cPoints);
+                    Mat trans = Imgproc.getPerspectiveTransform(startM, endM);
+
+                    Size s = new Size(rect.width, rect.height);
+                    Imgproc.warpPerspective(small, warped, trans, s);
+
+                    Mat tmp = new Mat(rect.height, rect.width, CvType.CV_8U);
+                    Mat msk = Mat.zeros(rect.height, rect.width, CvType.CV_8U);
+                    Mat roi = animLayer.submat(new Rect(rect.x, rect.y, rect.width, rect.height));
+
+                    Imgproc.cvtColor(warped, tmp, Imgproc.COLOR_RGBA2GRAY);
+
+                    Core.findNonZero(tmp, msk);
+
+                    // Create Mask of 0 Depth and 1 Channel, better method ?
+                    msk.convertTo(msk, CvType.CV_8U);
+                    List<Mat> rgba = new ArrayList<>(3);
+                    Core.split(tmp, rgba);
+                    Mat mR = rgba.get(0);
+
+                    warped.copyTo(roi, mR);
                 } else {
                     animItr = animation.iterator();
                 }
-
-                // Log.i(TAG, "count ... " + count++);
-                // Opencv stops working
-                // iv.setImageBitmap(bmp);
             }
         }
-        return inputFrame;
+        return animLayer;
     }
 
     public double pointDistance(Point p){
         return Math.sqrt(Math.pow(p.x, 2) + Math.pow(p.y, 2));
-    }
-
-    public Mat transformation(ArrayList<Point> pa) {
-        Mat warped = new Mat(camLayer.cols(), camLayer.rows(), camLayer.type());
-        Mat endM = Converters.vector_Point2f_to_Mat(pa);
-        Mat startM = Converters.vector_Point2f_to_Mat(imgPtsList);
-        Mat trans = Imgproc.getPerspectiveTransform(startM, endM);
-        Size s = new Size(camLayer.cols(), camLayer.rows());
-        Imgproc.warpPerspective(animLayer, warped, trans, s);
-        return warped;
     }
 
     // Not used
@@ -401,7 +424,10 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        return processInputFrame(inputFrame.rgba());
-        // return inputFrame.rgba();
+        // Log.i(TAG, "Inside onCameraFrame");
+        if(loader < 100)
+            return inputFrame.gray();
+        else
+            return processInputFrame(inputFrame.rgba());
     }
 }

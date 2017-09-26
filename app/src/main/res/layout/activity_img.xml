@@ -3,24 +3,13 @@
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#bd3394"
     tools:context="com.command.jddd.opencv.imgActivity">
-
-    <RelativeLayout
-        android:id="@+id/animation_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom|center"
-        android:layout_below="@id/camera_layout"
-        android:background="@android:color/transparent"
-        android:weightSum="1" >
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            opencv:srcCompat="@android:color/holo_green_dark" />
-
-    </RelativeLayout>
+            opencv:srcCompat="@android:color/holo_orange_dark" />
 
 </FrameLayout>

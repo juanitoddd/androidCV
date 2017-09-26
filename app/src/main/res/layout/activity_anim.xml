@@ -6,13 +6,12 @@
     android:background="#0099cc"
     tools:context="com.command.jddd.opencv.animActivity">
 
-    <!--
     <RelativeLayout
         android:id="@+id/overlay_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom|center"
-        android:background="#f00"
+        android:background="#fff"
         android:weightSum="1" >
 
         <ImageView
@@ -22,15 +21,14 @@
             opencv:srcCompat="@android:color/transparent" />
 
     </RelativeLayout>
-    android:layout_below="@id/overlay_layout"
-    -->
 
     <RelativeLayout
         android:id="@+id/camera_layout"
+        android:layout_below="@id/overlay_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom|center"
-        android:background="#f00"
+        android:background="@android:color/transparent"
         android:weightSum="1" >
 
         <org.opencv.android.JavaCameraView

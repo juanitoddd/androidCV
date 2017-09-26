@@ -25,7 +25,7 @@
         <activity
             android:name=".animActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_proc"
+            android:label="Cromasome"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
@@ -43,7 +43,7 @@
         <activity
             android:name=".imgActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_proc"
+            android:label="Cromasome"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme">
         </activity>

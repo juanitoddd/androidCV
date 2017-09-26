@@ -9,3 +9,4 @@ openCVLibrary320/*
 /build
 /captures
 .externalNativeBuild
+app/src/main/assets/*
