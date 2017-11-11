@@ -17,12 +17,6 @@
             android:screenOrientation="landscape">
         </activity>
         <activity
-            android:name=".DetectActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_detect"
-            android:theme="@style/FullscreenTheme">
-        </activity>
-        <activity
             android:name=".animActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="Cromasome"
@@ -32,13 +26,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".procActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_proc"
-            android:screenOrientation="landscape"
-            android:theme="@style/FullscreenTheme">
         </activity>
         <activity
             android:name=".imgActivity"

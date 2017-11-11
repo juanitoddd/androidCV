@@ -6,10 +6,10 @@
     android:background="#bd3394"
     tools:context="com.command.jddd.opencv.imgActivity">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            opencv:srcCompat="@android:color/holo_orange_dark" />
+        <org.opencv.android.JavaCameraView
+    android:id="@+id/camera_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    />
 
 </FrameLayout>

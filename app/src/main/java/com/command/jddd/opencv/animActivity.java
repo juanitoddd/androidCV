@@ -1,5 +1,6 @@
 package com.command.jddd.opencv;
 
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,8 +9,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.view.WindowManager;
+import android.view.View;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -87,25 +90,27 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
         javaCameraView = (JavaCameraView)findViewById(R.id.camera_view);
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
-        // iv = (ImageView) findViewById(R.id.overlayView);
+        javaCameraView.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                // ... Respond to touch events
+                Log.e(TAG, "  Touch event");
+                //Starting a new Intent
+                Intent contourScreen = new Intent(getApplicationContext(), imgActivity.class);
+
+                //Sending data to another Activity
+                // contourScreen.putExtra("name", inputName.getText().toString());
+                // contourScreen.putExtra("email", inputEmail.getText().toString());
+
+                startActivity(contourScreen);
+                return true;
+            }
+        });
         // iv.setVisibility(SurfaceView.VISIBLE);
         if (!OpenCVLoader.initDebug()) {
             Log.e(TAG, "  OpenCVLoader.initDebug(), not working.");
         } else {
             Log.d(TAG, "  OpenCVLoader.initDebug(), working.");
         }
-        /*
-        if (flag) {
-            javaCameraView.setCameraIndex(0);
-            javaCameraView.setCvCameraViewListener(this);
-            javaCameraView.enableView();
-            try {
-                initialize();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        */
     }
 
     @Override
@@ -184,9 +189,9 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
         String formattedName;
         animation = new ArrayList<>();
 
-        for(int j = 1; j < 51; j++) {
+        for(int j = 1; j < 61; j++) {
 
-            formattedName = "anim" + String.format("%04d", j) + ".png";
+            formattedName = "anim" + String.format("%03d", j) + ".png";
 
             Mat tmp = new Mat();
             Imgproc.resize(img2Mat(formattedName), tmp, new Size(width, height));
@@ -229,19 +234,6 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
         Bitmap bitmap = BitmapFactory.decodeStream(istr, null, opt);
         Utils.bitmapToMat(bitmap, mPt);
         return mPt;
-    }
-
-    public void loadAnimation() throws IOException {
-        /*
-
-        */
-        /*
-        ImageView iv = (ImageView) findViewById(R.id.imageView);
-        Bitmap bmp = null;
-        bmp = Bitmap.createBitmap(imgVector[0].cols(), imgVector[0].rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(imgVector[0], bmp);
-        iv.setImageBitmap(bmp);
-        */
     }
 
     public Mat processInputFrame(Mat inputFrame) {
@@ -365,12 +357,12 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
                     Size s = new Size(rect.width, rect.height);
                     Imgproc.warpPerspective(small, warped, trans, s);
 
-                    Mat tmp = new Mat(rect.height, rect.width, CvType.CV_8U);
-                    Mat msk = Mat.zeros(rect.height, rect.width, CvType.CV_8U);
+                    // Region Of Interest
                     Mat roi = animLayer.submat(new Rect(rect.x, rect.y, rect.width, rect.height));
 
+                    Mat tmp = new Mat(rect.height, rect.width, CvType.CV_8U);
+                    Mat msk = Mat.zeros(rect.height, rect.width, CvType.CV_8U);
                     Imgproc.cvtColor(warped, tmp, Imgproc.COLOR_RGBA2GRAY);
-
                     Core.findNonZero(tmp, msk);
 
                     // Create Mask of 0 Depth and 1 Channel, better method ?
@@ -408,18 +400,6 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
             ret = Imgproc.boundingRect(approxContour);
         }
         return (ret != null);
-    }
-
-    // Not used
-    public static List<MatOfPoint> getSquareContours(List<MatOfPoint> contours) {
-
-        List<MatOfPoint> squares = new ArrayList<MatOfPoint>();
-        for (MatOfPoint c : contours) {
-            if (isContourSquare(c)) {
-                squares.add(c);
-            }
-        }
-        return squares;
     }
 
     @Override
