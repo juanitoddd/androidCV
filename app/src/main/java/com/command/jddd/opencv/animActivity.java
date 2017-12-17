@@ -189,9 +189,9 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
         String formattedName;
         animation = new ArrayList<>();
 
-        for(int j = 1; j < 61; j++) {
+        for(int j = 0; j < 122; j++) {
 
-            formattedName = "anim" + String.format("%03d", j) + ".png";
+            formattedName = "gabriel" + String.format("%03d", j) + ".png";
 
             Mat tmp = new Mat();
             Imgproc.resize(img2Mat(formattedName), tmp, new Size(width, height));
@@ -349,7 +349,7 @@ public class animActivity extends AppCompatActivity implements CameraBridgeViewB
                     Imgproc.resize(t,small,new Size(rect.width, rect.height));//resize image
 
                     // Transformation Process
-                    Mat warped = new Mat(rect.width, rect.height, CvType.CV_8UC4);
+                    Mat warped = new Mat(rect.height, rect.width , CvType.CV_8UC4);
                     Mat startM = Converters.vector_Point2f_to_Mat(rPoints);
                     Mat endM = Converters.vector_Point2f_to_Mat(cPoints);
                     Mat trans = Imgproc.getPerspectiveTransform(startM, endM);
